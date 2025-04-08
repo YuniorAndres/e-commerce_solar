@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'users',
     'orders',
     'payments',
+
+    
+    
 ]
 
 MIDDLEWARE = [
@@ -60,6 +63,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
 
 TEMPLATES = [
     {
