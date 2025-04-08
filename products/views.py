@@ -10,3 +10,9 @@ from .serializers import ProductSerializer
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    
+# Agrega esta para ver, actualizar o eliminar por ID
+class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'id'
