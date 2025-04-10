@@ -1,5 +1,7 @@
 import reflex as rx
 from rxconfig import config
+from .state import ProductState
+import httpx
 
 # -------- NAVBAR --------
 def navbar():
@@ -47,12 +49,16 @@ def search_section():
 
 
 # -------- PRODUCT CARD --------
-def product_card(nombre: str, precio: str):
+def product_card(nombre: str, precio: str, descripcion: str, potencia: int, eficiencia: str, tipo: str):
     return rx.box(
         rx.vstack(
             rx.box("Imagen del panel", bg="blue.100", height="100px", width="100%"),
             rx.text(nombre, weight="bold", color="blue.800"),
             rx.text(f"${precio} USD", color="blue.600"),
+            rx.text(descripcion, font_size="sm"),
+            rx.text(f"Potencia: {potencia}W", font_size="sm"),
+            rx.text(f"Eficiencia: {eficiencia}%", font_size="sm"),
+            rx.text(f"Tipo: {tipo}", font_size="sm"),
             rx.button("Añadir al carrito", color_scheme="blue"),
             spacing="2",
         ),
@@ -61,21 +67,36 @@ def product_card(nombre: str, precio: str):
         padding="4",
         width="300px",
         box_shadow="md",
-        bg="white"
+        bg="black"
     )
+
 
 
 # -------- PRODUCTS SECTION --------
 def products_section():
-    return rx.flex(
-        product_card("Panel Solar Modelo X", "399.00"),
-        product_card("Panel Solar Modelo Y", "449.00"),
-        product_card("Panel Solar Modelo Z", "349.00"),
-        spacing="4",
-        padding="4",
-        wrap="wrap",
-        justify="center"
+    return rx.box(
+        rx.heading("Nuestros Productos", size="6", color="blue.700"),
+        rx.flex(
+ rx.foreach(
+    ProductState.products,
+    lambda p: product_card(
+        p.get("name", "Sin nombre"),
+        p.get("price", "0.00"),
+        p.get("description", "Sin descripción"),
+        p.get("power", 0),
+        p.get("efficiency", "N/A"),
+        p.get("panel_type", "No especificado")
     )
+),
+
+            wrap="wrap",
+            spacing="4",
+            justify="center",
+        ),
+        rx.button("Cargar productos", on_click=ProductState.fetch_products, color_scheme="blue"),
+        padding="4"
+    )
+
 
 
 # -------- FOOTER --------
@@ -107,9 +128,21 @@ def index() -> rx.Component:
         products_section(),
         footer(),
         spacing="6",
-        bg="gray.50"  # Claro, fijo
-
+        bg="gray.50",
+        on_mount=ProductState.on_load
     )
+
+
+def get_products():
+    try:
+        response = httpx.get("http://localhost:8000/api/products/")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return []
+    except Exception as e:
+        print("Error al obtener productos:", e)
+        return []
 
 
 # -------- APP --------
